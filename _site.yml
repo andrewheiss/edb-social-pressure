@@ -1,0 +1,22 @@
+name: "edb-social-pressure"
+exclude: ["lib", "output", "Makefile", "LICENSE", "README.html"]
+navbar:
+  title: "The Power of Ranking"
+  right:
+    - text: "Data cleaning"
+      icon: fa-table
+      href: 01_clean-data.html
+output:
+  html_document:
+    theme: flatly
+    highlight: pygments
+    md_extensions: +markdown_in_html_blocks+raw_html
+    code_folding: hide
+    code_download: true
+    toc: yes
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
+    toc_depth: 4
+    fig_height: 4
+    fig_width: 6
