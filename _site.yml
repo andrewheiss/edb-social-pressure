@@ -6,6 +6,9 @@ navbar:
     - text: "Data cleaning"
       icon: fa-table
       href: 01_clean-data.html
+    - text: "Figures and tables for paper"
+      icon: fa-bar-chart
+      href: 02_final-paper.html
 output:
   html_document:
     theme: flatly
