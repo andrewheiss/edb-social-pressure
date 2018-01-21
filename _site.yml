@@ -9,9 +9,10 @@ navbar:
 output:
   html_document:
     theme: flatly
+    css: html/custom.css
     highlight: pygments
     md_extensions: +markdown_in_html_blocks+raw_html
-    code_folding: hide
+    code_folding: show
     code_download: true
     toc: yes
     toc_float:
