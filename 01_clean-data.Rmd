@@ -1,0 +1,212 @@
+---
+title: "Clean data"
+author: "Andrew Heiss"
+date: "Last run: `r format(Sys.time(), '%B %e, %Y')`"
+output: 
+  html_document:
+    code_folding: show
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, message=FALSE}
+knitr::opts_chunk$set(cache = FALSE, fig.retina = 2,
+                      tidy.opts = list(width.cutoff = 120),  # For code
+                      width = 120)  # For output
+```
+
+```{r load-libraries, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(haven)
+library(countrycode)
+library(here)
+
+# Rescale values to a 0-100 scale
+normalize <- function(x) {
+  if (length(na.omit(x)) > 0) {
+    (x - 1) / (max(x, na.rm = TRUE) - 1) * 100
+  } else {
+    x
+  }
+}
+```
+
+# Countries with EDB bureau
+
+We collected a list of countries with special agencies or bureaus dedicated to tracking EDB requirements, progress, and reforms. This list comes from page 22 in the [2015 EDB report.](http://www.doingbusiness.org/~/media/GIAWB/Doing%20Business/Documents/Annual-Reports/English/DB15-Chapters/DB15-Report-Overview.pdf)
+
+```{r countries-with-edb-bureau, warning=FALSE}
+countries_with_edb_office <-
+  c(
+    "Indonesia",
+    "South Korea",
+    "Malaysia",
+    "Philippines",
+    "Sri Lanka",
+    "Algeria",
+    "Kuwait",
+    "Morocco",
+    "Saudi Arabia",
+    "United Arab Emirates",
+    "Azerbaijan",
+    "Croatia",
+    "Czech Republic",
+    "Georgia",
+    "Kazakhstan",
+    "Kosovo",
+    "Kyrgyzstan",
+    "Macedonia",
+    "Moldova",
+    "Montenegro",
+    "Poland",
+    "Russia",
+    "Tajikistan",
+    "Ukraine",
+    "United Kingdom",
+    "Uzbekistan",
+    "Botswana",
+    "Burundi",
+    "Central African Republic",
+    "Comoros",
+    "Democratic Republic of Congo",
+    "Republic of Congo",
+    "Cote d'Ivoire",
+    "Guinea",
+    "Kenya",
+    "Liberia",
+    "Malawi",
+    "Mali",
+    "Nigeria",
+    "Rwanda",
+    "Sierra Leone",
+    "Togo",
+    "Zambia",
+    "Chile",
+    "Colombia",
+    "Costa Rica",
+    "Dominican Republic",
+    "Guatemala",
+    "Mexico",
+    "Panama",
+    "Peru"
+  )
+
+# Standardize country names and codes
+edb_bureau <- data_frame(country_name_raw = countries_with_edb_office,
+                         ISO3 = countrycode(country_name_raw, 
+                                            "country.name", "iso3c"),
+                         cowcode = countrycode(country_name_raw, 
+                                               "country.name", "cown"),
+                         country = countrycode(country_name_raw, 
+                                               "country.name", "country.name")) %>%
+  mutate(ISO3 = ifelse(country_name_raw == "Kosovo", "XKX", ISO3)) %>%
+  select(country, ISO3, cowcode)
+```
+
+
+# Modify original Stata data
+
+Clean and munge the master Stata file.
+
+```{r clean-stata}
+edb_clean <- read_dta(file.path(here(), "data_raw", "MasterWBMarch16_15.dta")) %>%
+  # Filter and select a subset of the original data
+  filter(year > 1999) %>%
+  rename(p_edb_rank = p_ebd_rank) %>%
+  select(ccode, country_name, year, 
+         sb_proced, sb_days, sb_capital, sb_cost, con_proced, con_days, 
+         contains("_reform"),
+         gdp, gdpcap, pop, gdpgrowth, polity = polity2, ibrd,
+         p_edb_rank) %>%
+  # Make variable indicating if country has a reform bureau
+  mutate(has_bureau = ccode %in% edb_bureau$cowcode,
+         has_bureau = factor(has_bureau, 
+                             levels = c(FALSE, TRUE),
+                             labels = c("No EDB reform committee", 
+                                        "Special EDB reform committee"))) %>%
+  # Log variables
+  mutate_at(vars(starts_with("sb"), starts_with("con"), 
+                 gdp, gdpcap, pop, -contains("_reform")),
+            funs(ln = log1p(.))) %>%
+  # Center around different years for interrupted time series models
+  mutate(year_centered_2003 = year - 2003,
+         year_centered_2004 = year - 2004,
+         year_centered_2005 = year - 2005,
+         year_centered_2006 = year - 2006,
+         year_centered_2007 = year - 2007,
+         year_centered_2008 = year - 2008,
+         year_centered_2009 = year - 2009,
+         year_centered_2010 = year - 2010,
+         year_centered_2011 = year - 2011,
+         year_centered_2012 = year - 2012,
+         year_centered_2013 = year - 2013,
+         ranked_2003 = year_centered_2003 >= 0,
+         ranked_2004 = year_centered_2004 >= 0,
+         ranked_2005 = year_centered_2005 >= 0,
+         ranked_2006 = year_centered_2006 >= 0,
+         ranked_2007 = year_centered_2007 >= 0,
+         ranked_2008 = year_centered_2008 >= 0,
+         ranked_2009 = year_centered_2009 >= 0,
+         ranked_2010 = year_centered_2010 >= 0,
+         ranked_2011 = year_centered_2011 >= 0,
+         ranked_2012 = year_centered_2012 >= 0,
+         ranked_2013 = year_centered_2013 >= 0)  %>%
+  # Lag variables within countries
+  group_by(ccode) %>%
+  mutate(loan_ln = log1p(sum(ibrd, na.rm = TRUE))) %>%
+  mutate_all(funs(lag = lag(.))) %>%
+  # Normalize rankings within years
+  group_by(year) %>%
+  mutate(p_edb_rank_normalized = normalize(p_edb_rank)) %>%
+  ungroup()
+
+# Create variables indicating if a country is included in the 2001 or 2004 report
+edb_its_constrained_countries <- edb_clean %>%
+  mutate(in_report_in_2004 = year == 2004 & !is.na(sb_days),
+         in_report_in_2001 = year == 2001 & !is.na(sb_days)) %>%
+  group_by(ccode) %>%
+  summarise(in_2004 = sum(in_report_in_2004),
+            in_2001 = sum(in_report_in_2001))
+
+# Add in_2001 and in_2004 to final data
+edb_clean_final <- edb_clean %>%
+  left_join(edb_its_constrained_countries, by = "ccode")
+
+# Save cleaned data
+write_rds(edb_clean_final, file.path(here(), "output", "data", "edb_clean.rds"))
+write_csv(edb_clean_final, file.path(here(), "output", "data", "edb_clean.csv"))
+write_dta(edb_clean_final, file.path(here(), "output", "data", "edb_clean.dta"))
+```
+
+
+# Types of EDB reforms
+
+```{r reform-types, warning=FALSE}
+reform_types <- tribble(
+  ~var_name,          ~clean_name,
+  "sb_reform",        "Starting a business",
+  "cp_reform",        "Construction permits",
+  "el_reform",        "Getting electricity",
+  "rp_reform",        "Registering property",
+  "cred_reform",      "Getting credit",
+  "pmi_reform",       "Protecting minority investors",
+  "tx_reform",        "Paying taxes",
+  "trade_reform",     "Trading across borders",
+  "con_reform",       "Enforcing contracts",
+  "insolv_reform",    "Resolving insolvency"
+)
+
+edb_reforms <- edb_clean %>%
+  select(ccode, year, contains("_reform"), has_bureau, 
+         p_edb_rank, p_edb_rank_normalized) %>%
+  gather(reform_type, reform_num, contains("_reform")) %>%
+  mutate(reform_num_no_na = ifelse(is.na(reform_num), 0, reform_num),
+         reform_positive = ifelse(reform_num_no_na > 0, reform_num_no_na, 0),
+         reform_type_clean = factor(reform_type, levels = reform_types$var_name,
+                                    labels = reform_types$clean_name, ordered = TRUE))
+
+# Save cleaned data
+write_rds(edb_reforms, file.path(here(), "output", "data", "edb_reforms.rds"))
+write_csv(edb_reforms, file.path(here(), "output", "data", "edb_reforms.csv"))
+write_dta(edb_reforms, file.path(here(), "output", "data", "edb_reforms.dta"))
+```
