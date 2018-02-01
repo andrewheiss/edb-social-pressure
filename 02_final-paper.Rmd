@@ -31,18 +31,6 @@ edb_reforms <- read_rds(file.path(here(), "output", "data", "edb_reforms.rds"))
 # Load helpful functions
 source(file.path(here(), "lib", "model_stuff.R"))
 source(file.path(here(), "lib", "graphics_stuff.R"))
-
-# Colors
-# color_no_committee <- "#004259"
-# color_committee <- "#FC7300"
-# its_1 <- "red"
-# its_2 <- "blue"
-
-# Grayscale
-color_no_committee <- "black"
-color_committee <- "grey70"
-its_1 <- "black"
-its_2 <- "grey70"
 ```
 
 # Tables

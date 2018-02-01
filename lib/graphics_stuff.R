@@ -1,3 +1,16 @@
+# Colors
+# color_no_committee <- "#004259"
+# color_committee <- "#FC7300"
+# its_1 <- "red"
+# its_2 <- "blue"
+
+# Grayscale
+color_no_committee <- "black"
+color_committee <- "grey70"
+its_1 <- "black"
+its_2 <- "grey70"
+
+
 # ggplot theme
 theme_edb <- function(base_size = 9, base_family = "Clear Sans Light") {
   update_geom_defaults("label", list(family = "Clear Sans Light"))
