@@ -1,0 +1,30 @@
+---
+title: "Appendix analysis"
+author: "Andrew Heiss"
+date: "Last run: `r format(Sys.time(), '%B %e, %Y')`"
+output: 
+  html_document:
+    code_folding: hide
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, message=FALSE}
+knitr::opts_chunk$set(cache = FALSE, fig.retina = 2,
+                      tidy.opts = list(width.cutoff = 120),  # For code
+                      width = 120)  # For output
+```
+
+```{r load-libraries-data-functions, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(pander)
+library(here)
+
+# Load pre-cleaned data
+edb_clean <- read_rds(file.path(here(), "output", "data", "edb_clean.rds"))
+edb_reforms <- read_rds(file.path(here(), "output", "data", "edb_reforms.rds"))
+
+# Load helpful functions
+source(file.path(here(), "lib", "model_stuff.R"))
+source(file.path(here(), "lib", "graphics_stuff.R"))
+```

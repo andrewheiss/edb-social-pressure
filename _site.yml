@@ -14,6 +14,9 @@ navbar:
   - text: Figures and tables for paper
     icon: fa-bar-chart
     href: 02_final-paper.html
+  - text: Appendix analysis
+    icon: fa-bar-chart
+    href: 03_appendix.html
 output:
   html_document:
     theme: flatly
