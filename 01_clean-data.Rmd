@@ -101,6 +101,10 @@ edb_bureau <- data_frame(country_name_raw = countries_with_edb_office,
                                                "country.name", "country.name")) %>%
   mutate(ISO3 = ifelse(country_name_raw == "Kosovo", "XKX", ISO3)) %>%
   select(country, ISO3, cowcode)
+
+write_rds(edb_bureau, file.path(here(), "output", "data", "edb_bureaus.rds"))
+write_csv(edb_bureau, file.path(here(), "output", "data", "edb_bureaus.csv"))
+write_dta(edb_bureau, file.path(here(), "output", "data", "edb_bureaus.dta"))
 ```
 
 
