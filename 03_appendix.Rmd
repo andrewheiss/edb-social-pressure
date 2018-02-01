@@ -119,3 +119,83 @@ cat(tbl_countries)
 cat(tbl_countries, 
     file = file.path(here(), "output", "tables", "app_table_countries.md"))
 ```
+
+
+# How control variables relate to being in the sample and to the outcomes
+
+## Model A1
+
+## Model A2
+
+## Model A3
+
+## Model A4
+
+## Model A5
+
+
+# Starting a Business indicators
+
+*Not generated with this script.*
+
+
+# Enforcing Contracts indicators
+
+*Not generated with this script.*
+
+
+# Policy reform: OLS models
+
+Table 3 from the paper: summary of coefficients for 8 OLS models
+
+TABLE HERE
+
+Full models in the tables below.
+
+
+# Policy reform: ITS models
+
+Table 4 from the paper: summary of coefficients for 8 ITS models
+
+TABLE HERE
+
+Full models in the tables below.
+
+
+# Country fixed effects for OLS models
+
+
+## Table C1
+
+## Table C2
+
+## Table C3
+
+
+# Year fixed effects for OLS models
+
+## Table D1
+
+## Table D2
+
+## Table D3
+
+
+# Description of Reform Coding
+
+*Not generated with this script.*
+
+
+# What explains reform committees?
+
+A bunch of stuff from old repo…
+
+
+# India experiment survey text
+
+*Not generated with this script.*
+
+
+# Investor experiment survey text
+
+*Not generated with this script.*
