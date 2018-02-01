@@ -239,7 +239,29 @@ cat(tbl_its, file = file.path(here(), "output", "tables", "table_its.md"))
 
 ## Figure 1: Doing Business Website Visits, Annually (2003-2016)
 
-*Not generated with this script.*
+Estimated data based on a screenshot of internal EDB web traffic reports.
+
+```{r fig-edb-website-traffic, message=FALSE, warning=FALSE, fig.width=6, fig.height=2.5}
+edb_web <- read_csv(file.path(here(), "data_raw", "edb-traffic_2013-2016.csv"),
+                    col_names = c("Year", "Visits"))
+
+fig_edb_web <- ggplot(edb_web, aes(x = Year, y = Visits)) + 
+  geom_line() + 
+  labs(x = NULL, y = "Annual visits") +
+  scale_y_continuous(labels = scales::comma) +
+  scale_x_continuous(breaks = seq(2002, 2016, 2)) +
+  theme_edb() +
+  theme(panel.grid.minor = element_blank())
+
+fig_edb_web
+
+ggsave(fig_edb_web, 
+       filename = file.path(here(), "output", "figures", "edb_website_traffic.pdf"),
+       width = 6, height = 2.5, units = "in", device = cairo_pdf)
+ggsave(fig_edb_web, 
+       filename = file.path(here(), "output", "figures", "edb_website_traffic.png"),
+       width = 6, height = 2.5, units = "in", type = "cairo", dpi = 300)
+```
 
 
 ## Figure 2: Average change in select subindicators, before and after public ranking (2006)
