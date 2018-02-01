@@ -17,6 +17,7 @@ knitr::opts_chunk$set(cache = FALSE, fig.retina = 2,
 
 ```{r load-libraries-data-functions, message=FALSE, warning=FALSE}
 library(tidyverse)
+library(countrycode)
 library(pander)
 library(skimr)
 library(here)
@@ -82,4 +83,39 @@ tbl_edb_summary <- pandoc.table.return(edb_summary, caption = caption,
 cat(tbl_edb_summary)
 cat(tbl_edb_summary, 
     file = file.path(here(), "output", "tables", "app_table_var_summary.md"))
+```
+
+
+# List of countries in initial 2001 report
+
+\* indicates country has an EDB reform committee by 2015
+
+```{r tbl-countries, warning=FALSE, message=FALSE, results="asis"}
+edb_bureaus <- read_csv(file.path(here(), "output", "data", "edb_bureaus.csv"))
+
+country_names <- edb_clean %>%
+  filter(in_2001 == 1) %>%
+  group_by(ccode) %>%
+  summarise(cow = unique(ccode)) %>%
+  ungroup() %>%
+  mutate(has_committee = ifelse(ccode %in% edb_bureaus$cowcode, "\\*", ""),
+         Country = countrycode(cow, "cown", "country.name")) %>%
+  mutate(Country = case_when(
+    .$cow == 1001 ~ "Serbia",
+    .$cow == 1005 ~ "Hong Kong",
+    TRUE ~ .$Country
+  )) %>%
+  arrange(Country) %>%
+  mutate(Country = paste0(Country, has_committee)) %>%
+  select(Country)
+
+caption <- "Countries in 2001 report"
+
+tbl_countries <- pandoc.table.return(matrix(c(country_names$Country, rep(NA, 2)), 
+                                            ncol = 4),
+                                     split.tables=Inf, missing = "", justify = "llll")
+
+cat(tbl_countries)
+cat(tbl_countries, 
+    file = file.path(here(), "output", "tables", "app_table_countries.md"))
 ```
