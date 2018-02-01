@@ -1,0 +1,15 @@
+Variable,Definition,Source
+sb_days,Number of days required to start a business,World Bank
+sb_cost,Cost (% of income per capita) of starting a business ,World Bank
+sb_capital,Paid-in minimum capital (% of income per capita) required to start a business,World Bank
+sb_proced,Number of procedures required for an entrepreneur to legally operate a business,World Bank
+con_proced,Number of procedures required to resolve a dispute,World Bank
+con_days,Number of days required for the process of dispute resolution ,World Bank
+gdp,GDP (constant 2005 USD),World Development Indicators
+gdpcap,GDP per capita,World Development Indicators
+gdpgrowth,GDP growth,World Development Indicators
+pop_ln,Log of population,World Development Indicators
+polity,Polity IV score,Polity IV Project
+inttot,Magnitude of international conflict,Center for Systemic Peace
+civtot,Magnitude of civil conflict,Center for Systemic Peace
+loan_ln,"Log of the sum of all loans from the IBRD since 2005, constant for all years",

@@ -2,10 +2,10 @@
 title: "Appendix analysis"
 author: "Andrew Heiss"
 date: "Last run: `r format(Sys.time(), '%B %e, %Y')`"
-output: 
+output:
   html_document:
     code_folding: hide
-editor_options: 
+editor_options:
   chunk_output_type: console
 ---
 
@@ -18,6 +18,7 @@ knitr::opts_chunk$set(cache = FALSE, fig.retina = 2,
 ```{r load-libraries-data-functions, message=FALSE, warning=FALSE}
 library(tidyverse)
 library(pander)
+library(skimr)
 library(here)
 
 # Load pre-cleaned data
@@ -27,4 +28,58 @@ edb_reforms <- read_rds(file.path(here(), "output", "data", "edb_reforms.rds"))
 # Load helpful functions
 source(file.path(here(), "lib", "model_stuff.R"))
 source(file.path(here(), "lib", "graphics_stuff.R"))
+```
+
+
+# Variable descriptions
+
+```{r tbl-vars-description, results="asis", warning=FALSE, message=FALSE}
+edb_summary_base <- read_csv(file.path(here(), "data_raw", "variable-summary-base.csv"))
+
+edb_var_descriptions <- edb_summary_base %>%
+  mutate(Variable = paste0("`", Variable, "`"))
+
+caption <- "Description of variables used in analysis"
+
+tbl_var_descriptions <- pandoc.table.return(edb_var_descriptions, 
+                                            caption = caption, 
+                                            split.tables = Inf,
+                                            justify = "lll", missing = "")
+
+cat(tbl_var_descriptions)
+cat(tbl_var_descriptions, 
+    file = file.path(here(), "output", "tables", "app_table_var_desc.md"))
+
+```
+
+
+# Variable summaries
+
+```{r tbl-vars-summary, results="asis", warning=FALSE, message=FALSE}
+edb_summary_stats <- edb_clean %>%
+  select(one_of(edb_summary_base$Variable)) %>%
+  gather(Variable, value) %>%
+  filter(!is.na(value)) %>%
+  group_by(Variable) %>%
+  summarize(N = n(),
+            Mean = mean(value),
+            `Std. Dev` = sd(value),
+            Min = min(value),
+            Max = max(value),
+            Distribution = inline_hist(value)) 
+
+edb_summary <- edb_summary_base %>%
+  left_join(edb_summary_stats, by = "Variable") %>%
+  mutate(Variable = paste0("`", Variable, "`")) %>%
+  select(-Definition, -Source)
+
+caption <- "Summary statistics of variables used in analysis"
+
+tbl_edb_summary <- pandoc.table.return(edb_summary, caption = caption, 
+                                       big.mark = ",", split.tables = Inf,
+                                       justify = "lcccccc")
+
+cat(tbl_edb_summary)
+cat(tbl_edb_summary, 
+    file = file.path(here(), "output", "tables", "app_table_var_summary.md"))
 ```
