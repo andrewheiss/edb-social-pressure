@@ -9,7 +9,8 @@ color_no_committee <- "black"
 color_committee <- "grey70"
 its_1 <- "black"
 its_2 <- "grey70"
-
+climate_importance <- "black"
+edb_importance <- "grey70"
 
 # ggplot theme
 theme_edb <- function(base_size = 9, base_family = "Clear Sans Light") {

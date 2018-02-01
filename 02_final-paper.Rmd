@@ -473,7 +473,64 @@ ggsave(plot_ranking_bumps_norm,
 
 ## Figure 5: Public Assessments of Importance of Improving India's Business Climate and EDB Rankings, by Exposure to EDB Information
 
-*Not generated with this script.*
+```{r fig-exposure-assessment, message=FALSE, warning=FALSE, fig.width=6, fig.height=3}
+chn_ind_assessments <- read_csv(file.path(here(), "data_raw", "chn-ind-assessments.csv")) %>%
+  rename(Frame = X1) %>%
+  gather(key, value, -Frame)
+
+# Split into two data frames for faceting, then recombine
+chn_ind_both <- chn_ind_assessments %>%
+  filter(key %in% c("India Higher", "No Rank", "China Higher")) %>%
+  mutate(comparison = "Both")
+
+ind_only <- chn_ind_assessments %>%
+  filter(key %in% c("No Rank", "India's Rank Only")) %>%
+  mutate(comparison = "India only")
+
+blank_country <- data_frame(Frame = unique(chn_ind_assessments$Frame),
+                            key = " ", value = c(0, 0), 
+                            comparison = "India only")
+
+chn_ind_plot_data <- bind_rows(chn_ind_both, ind_only, blank_country) %>%
+  mutate(key = factor(key, levels = c("India Higher", "India's Rank Only", 
+                                      "No Rank", "China Higher", " "),
+                      ordered = TRUE),
+         Frame = fct_inorder(Frame, ordered = TRUE))
+
+chn_ind_annotations <- data_frame(x = c(4, 5), y = c(0.6, 0.6),
+                                  text = c("Lower importance", "Higher importance"),
+                                  hjust = c("left", "right"))
+
+# Plot
+plot_chn_ind <- ggplot(chn_ind_plot_data, aes(x = value, y = fct_rev(key), 
+                                              color = fct_rev(Frame))) +
+  geom_pointrangeh(aes(xmin = 0, xmax = value), size = 0.5,
+                   position = position_dodgev(height = 0.5)) +
+  geom_text(data = chn_ind_annotations, 
+            aes(x = x, y = y, label = text, hjust = hjust),
+            vjust = "center", color = "grey40", size = 2, lineheight = 1) +
+  geom_text(aes(label = value), position = position_dodgev(height = 0.5),
+            hjust = -0.4, size = 2.5) +
+  scale_color_manual(values = c(edb_importance, climate_importance), name = NULL,
+                     guide = guide_legend(reverse = TRUE)) +
+  scale_x_continuous(breaks = seq(0, 5, 0.5)) +
+  coord_cartesian(xlim = c(4, 5)) +
+  labs(x = NULL, y = NULL) +
+  theme_edb() +
+  theme(strip.text = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.y = element_blank()) +
+  facet_wrap(~ comparison, scales = "free_y")
+
+plot_chn_ind
+
+ggsave(plot_chn_ind, 
+       filename = file.path(here(), "output", "figures", "chn_ind_exposure.pdf"),
+       width = 6, height = 3, units = "in", device = cairo_pdf)
+ggsave(plot_chn_ind, 
+       filename = file.path(here(), "output", "figures", "chn_ind_exposure.png"),
+       width = 6, height = 3, units = "in", type = "cairo", dpi = 300)
+```
 
 
 ```{r convert-tables, include=FALSE}
