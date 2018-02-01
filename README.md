@@ -12,6 +12,7 @@ All the figures and tables for the paper can be replicated and reproduced with R
 
 - [`tidyverse`](http://tidyverse.tidyverse.org/)
 - [`here`](https://cran.r-project.org/package=here)
+- [`skimr`](https://cran.r-project.org/package=skimr)
 - [`gridExtra`](https://cran.r-project.org/package=gridExtra)
 - [`ggrepel`](https://cran.r-project.org/package=ggrepel)
 - [`ggstance`](https://cran.r-project.org/package=ggstance)
