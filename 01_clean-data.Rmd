@@ -114,10 +114,10 @@ edb_clean <- read_dta(file.path(here(), "data_raw", "MasterWBMarch16_15.dta")) %
   filter(year > 1999) %>%
   rename(p_edb_rank = p_ebd_rank) %>%
   select(ccode, country_name, year, 
-         sb_proced, sb_days, sb_capital, sb_cost, con_proced, con_days, 
+         sb_proced, sb_days, sb_capital, sb_cost, con_proced, con_days,
          contains("_reform"),
          gdp, gdpcap, pop, gdpgrowth, polity = polity2, ibrd,
-         p_edb_rank) %>%
+         inttot, civtot, p_edb_rank) %>%
   # Make variable indicating if country has a reform bureau
   mutate(has_bureau = ccode %in% edb_bureau$cowcode,
          has_bureau = factor(has_bureau, 
