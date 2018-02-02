@@ -234,7 +234,7 @@ models_to_run <- expand.grid(year = 2003:2013,
                              grouping = c("All countries", 
                                           "No EDB reform committee", 
                                           "Special EDB reform committee"),
-                             stringsAsFactors=FALSE)
+                             stringsAsFactors = FALSE)
 
 # As in the paper analysis, this function generates an R model formula based on
 # the name of the dependent variable and the year provided. i.e., given
