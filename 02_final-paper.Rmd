@@ -158,16 +158,6 @@ Or an example R formula:
     sb_proced ~ year_centered_2005 + ranked_2005 + year_centered_2005 * ranked_2005
 
 ```{r its-models}
-# Define all the models that need to be run
-# For now, just do 2005 and 2006 for all countries. In the older analysis, this
-# ran models from 2003-2013 for all countries, countries with EDB committees,
-# and countries without EDB committees
-its_models_to_run <- expand.grid(year = 2005:2006,
-                                 outcome = c("sb_proced", "sb_days_ln",
-                                             "sb_cost_ln", "sb_capital_ln"),
-                                 grouping = "All countries",
-                                 stringsAsFactors = FALSE)
-
 # As with run_lagged_ols_model(), this function generates an R model formula and
 # runs it. i.e., given "sb_proced" and "2005", it will create the formula
 # "sb_proced ~ year_centered_2005 + ranked_2005 + year_centered_2005 * ranked_2005" 
