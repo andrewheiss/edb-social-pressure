@@ -151,7 +151,8 @@ model_in_2001_robust <- robust_clusterify(model_in_2001, edb_in_2001, "ccode") %
 model_in_2001_out <- stargazer(model_in_2001, type = "html", dep.var.caption = "",
                                dep.var.labels = "in\\_2001\\_lead",
                                se = list(model_in_2001_robust$std.error),
-                               notes = "Logit model. Robust standard errors clustered by country.")
+                               notes = "Logit model. Robust standard errors clustered by country.",
+                               keep.stat = c("n", "rsq", "adj.rsq"))
 ```
 
 ```{r tbl-model-in-2001, results="asis"}
@@ -202,7 +203,8 @@ edb_checks_models <- edb_checks %>%
 edb_checks_models_out <- stargazer(edb_checks_models$model, type = "html", 
                                    dep.var.caption = "",
                                    se = edb_checks_models$ses_only,
-                                   notes = "OLS models. Robust standard errors clustered by country.")
+                                   notes = "OLS models. Robust standard errors clustered by country.",
+                                   keep.stat = c("n", "rsq", "adj.rsq"))
 ```
 
 ```{r tbl-model-check-sb, results="asis"}
