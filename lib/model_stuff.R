@@ -29,3 +29,8 @@ p_stars <- function(p) {
                 symbols = c("***", "**", "*", " "))
   as.character(out)
 }
+
+# Escape stargazer stars for Markdown output
+escape_stars <- function(x) {
+  str_replace_all(x, "\\*", "\\\\*")
+}

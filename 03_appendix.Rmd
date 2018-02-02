@@ -17,10 +17,19 @@ knitr::opts_chunk$set(cache = FALSE, fig.retina = 2,
 
 ```{r load-libraries-data-functions, message=FALSE, warning=FALSE}
 library(tidyverse)
+library(broom)
 library(countrycode)
 library(pander)
+library(stargazer)
 library(skimr)
 library(here)
+
+# By default, R uses polynomial contrasts for ordered factors in linear models
+# options("contrasts") 
+# So make ordered factors use treatment contrasts instead
+options(contrasts = rep("contr.treatment", 2))
+# Or do it on a single variable:
+# contrasts(df$x) <- "contr.treatment"
 
 # Load pre-cleaned data
 edb_clean <- read_rds(file.path(here(), "output", "data", "edb_clean.rds"))
@@ -50,7 +59,6 @@ tbl_var_descriptions <- pandoc.table.return(edb_var_descriptions,
 cat(tbl_var_descriptions)
 cat(tbl_var_descriptions, 
     file = file.path(here(), "output", "tables", "app_table_var_desc.md"))
-
 ```
 
 
@@ -112,8 +120,8 @@ country_names <- edb_clean %>%
 caption <- "Countries in 2001 report"
 
 tbl_countries <- pandoc.table.return(matrix(c(country_names$Country, rep(NA, 2)), 
-                                            ncol = 4),
-                                     split.tables=Inf, missing = "", justify = "llll")
+                                            ncol = 4), caption = caption,
+                                     split.tables = Inf, missing = "", justify = "llll")
 
 cat(tbl_countries)
 cat(tbl_countries, 
@@ -125,13 +133,83 @@ cat(tbl_countries,
 
 ## Model A1
 
-## Model A2
+```{r model-in-2001, results="hide"}
+edb_in_2001 <- edb_clean %>%
+  filter(year > 2000) %>%
+  group_by(ccode) %>%
+  mutate(in_2001_lead = lead(in_2001),
+         in_2001_lead = factor(in_2001_lead, levels = 0:1, 
+                               labels = c("Not in 2001", "In 2001")))
 
-## Model A3
+model_in_2001 <- glm(in_2001_lead ~ gdpcap_ln + gdpgrowth + polity + pop_ln + 
+                        inttot + civtot + loan_ln, 
+                      data = edb_in_2001, family = binomial(link = "logit")) 
 
-## Model A4
+model_in_2001_robust <- robust_clusterify(model_in_2001, edb_in_2001, "ccode") %>%
+  magrittr::use_series(coefs) %>% tidy()
 
-## Model A5
+model_in_2001_out <- stargazer(model_in_2001, type = "html", dep.var.caption = "",
+                               dep.var.labels = "in\\_2001\\_lead",
+                               se = list(model_in_2001_robust$std.error),
+                               notes = "Logit model. Robust standard errors clustered by country.")
+```
+
+```{r tbl-model-in-2001, results="asis"}
+cat(paste(escape_stars(model_in_2001_out), collapse = "\n"), "\n")
+cat(paste(model_in_2001_out, collapse = "\n"), "\n",
+    file = file.path(here(), "output", "tables", "app_model_A1.html"))
+```
+
+## Models A2–A5
+
+```{r model-check-sb, results="hide"}
+# This function generates an R formula based on a given outcome and its lead. 
+# Given "sb_days_ln", it will create and run "sb_days_ln_lead ~ sb_days_ln + ..."
+run_leaded_ols_check <- function(outcome, df) {
+  outcome_lead <- paste0(outcome, "_lead")
+  
+  form <- as.formula(paste0(outcome_lead, " ~ ", outcome, 
+                          " + gdpcap_ln + gdpgrowth + polity + ", 
+                          "pop_ln + inttot + civtot + loan_ln"))
+  
+  lm(form, data = df)
+}
+
+# Define all the models that need to be run
+models_to_run <- data_frame(outcome = c("sb_days_ln", "sb_proced",
+                                        "sb_cost_ln", "sb_capital_ln"),
+                            grouping = 1)  # Temporary variable for joining
+
+edb_checks <- edb_clean %>%
+  filter(year > 2000, in_2001 == 1) %>%
+  mutate(grouping = 1) %>%
+  group_by(ccode) %>%
+  mutate_at(vars(sb_days_ln, sb_proced, sb_cost_ln, sb_capital_ln),
+            funs(lead = lead(.))) %>%
+  group_by(grouping) %>%
+  nest() %>%
+  right_join(models_to_run, by = "grouping")
+
+# Run all the models within the data frame
+edb_checks_models <- edb_checks %>%
+  mutate(model = pmap(.l = list(outcome, data), run_leaded_ols_check),
+         # Add robust clustered SEs
+         robust_se = pmap(.l = list(model, data, "ccode"), robust_clusterify),
+         # Add a data frame of model parameters with correct SEs
+         tidy_robust = robust_se %>% map(~ tidy(.$coef)),
+         ses_only = tidy_robust %>% map(~ .$std.error))
+
+edb_checks_models_out <- stargazer(edb_checks_models$model, type = "html", 
+                                   dep.var.caption = "",
+                                   se = edb_checks_models$ses_only,
+                                   notes = "OLS models. Robust standard errors clustered by country.")
+```
+
+```{r tbl-model-check-sb, results="asis"}
+cat(paste(escape_stars(edb_checks_models_out), collapse = "\n"), "\n")
+cat(paste(edb_checks_models_out, collapse = "\n"), "\n",
+    file = file.path(here(), "output", "tables", "app_models_A2-5.html"))
+```
 
 
 # Starting a Business indicators
