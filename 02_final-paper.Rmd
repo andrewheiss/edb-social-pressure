@@ -70,8 +70,8 @@ Or an example R formula:
 
 ```{r ols-models}
 # Define all the models that need to be run
-# For now, just do 2005 and 2006 for all countries. In the older analysis, this
-# ran models from 2003-2013 for all countries, countries with EDB committees,
+# For the paper we just do 2005 and 2006 for all countries. In the appendix we
+# run models from 2003-2013 for all countries, countries with EDB committees,
 # and countries without EDB committees
 models_to_run <- expand.grid(year = 2005:2006,
                              outcome = c("sb_proced", "sb_days_ln",
