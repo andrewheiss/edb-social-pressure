@@ -363,11 +363,110 @@ cat(tbl_ols_all,
 
 # Policy reform: ITS models
 
-Table 4 from the paper: summary of coefficients for 8 ITS models
+```{r models-its-all}
+run_its_model <- function(outcome, year, df) {
+  year_variable <- paste0("ranked_", year)
+  year_centered <- paste0("year_centered_", year)
+  
+  form <- as.formula(paste0(outcome, " ~ ", year_centered, " + ", year_variable,
+                            " + ", year_centered, " * ", year_variable))
+  
+  lm(form, data = df)
+}
 
-TABLE HERE
+# Run all the models within the data frame
+its_models_lagged <- models_to_run_full %>%
+  mutate(model = pmap(.l = list(outcome, year, data), run_its_model),
+         # Add robust clustered SEs
+         robust_se = pmap(.l = list(model, data, "ccode"), robust_clusterify),
+         # Add model summary statistics
+         glance = model %>% map(glance),
+         # Add a data frame of model parameters with correct SEs
+         tidy_robust = robust_se %>% map(~ tidy(.$coef)),
+         ses_only = tidy_robust %>% map(~ .$std.error))
 
-Full models in the tables below.
+# Extract the ranking coefficients from all models
+its_coefs <- its_models_lagged %>%
+  # Spread out the model results
+  unnest(tidy_robust) %>%
+  # Only look at the coefficients from interaction terms (they have ":" in their names)
+  filter(str_detect(term, ":")) %>%
+  # Clean up the estimates, labels, and add stars
+  mutate(value = paste0(sprintf("%.3f", round(estimate, 3)), p_stars(p.value)),
+         term = str_replace(term, "(.+)\\.\\d+:(.+)\\.\\d+TRUE", "\\1 × \\2")) %>%
+  # Get rid of extra columns
+  select(-c(estimate, std.error, statistic, p.value)) %>%
+  spread(outcome, value) %>%
+  # Give table clean column names
+  select(Subset = grouping, Year = year,
+         Procedures = sb_proced, `Cost (log)` = sb_cost_ln,
+         `Days (log)` = sb_days_ln, `Capital (log)` = sb_capital_ln)
+```
+
+## Table 4 from the paper: summary of coefficients for 8 ITS models
+
+Full models in tables C1–3 below.
+
+```{r tbl-its-in-paper, results="asis"}
+tbl_its_paper <- its_coefs %>%
+  filter(Subset == "All countries", Year %in% c(2005, 2006))
+
+caption <- 'Summary of β~3~ coefficients (i.e. "year.centered.200x × ranked.200x") for ITS models'
+
+tbl_its <- pandoc.table.return(tbl_its_paper, caption = caption)
+
+cat(tbl_its)
+cat(tbl_its, file = file.path(here(), "output", "tables", "app_table_its.md"))
+```
+
+## Table C1: 2005 analysis, full ITS models
+
+```{r tbl-its-2005-2006, results="hide"}
+tbl_its_2005 <- its_models_lagged %>%
+  filter(grouping == "All countries", year == 2005)
+
+tbl_its_2005_out <- stargazer(tbl_its_2005$model, type = "html", 
+                              dep.var.caption = "",
+                              se = tbl_its_2005$ses_only,
+                              notes = "ITS models. Robust standard errors clustered by country.",
+                              keep.stat = c("n", "rsq", "adj.rsq"))
+
+tbl_its_2006 <- its_models_lagged %>%
+  filter(grouping == "All countries", year == 2006)
+
+tbl_its_2006_out <- stargazer(tbl_its_2006$model, type = "html", 
+                              dep.var.caption = "",
+                              se = tbl_its_2006$ses_only,
+                              notes = "ITS models. Robust standard errors clustered by country.",
+                              keep.stat = c("n", "rsq", "adj.rsq"))
+```
+
+```{r tbl-its-2005, results="asis"}
+cat(paste(escape_stars(tbl_its_2005_out), collapse = "\n"), "\n")
+cat(paste(tbl_its_2005_out, collapse = "\n"), "\n",
+    file = file.path(here(), "output", "tables", "app_models_C1.html"))
+```
+
+## Table C2: 2006 analysis, full ITS models
+
+```{r tbl-its-2006, results="asis"}
+cat(paste(escape_stars(tbl_its_2006_out), collapse = "\n"), "\n")
+cat(paste(tbl_its_2006_out, collapse = "\n"), "\n",
+    file = file.path(here(), "output", "tables", "app_models_C2.html"))
+```
+
+## Table C3: Cutpoints at every possible year, ITS models
+
+```{r tbl-its-all, results="asis"}
+caption <- 'Summary of β~3~ coefficients (i.e. "year.centered.200x × ranked.200x") for ITS models for all years'
+
+tbl_its_all <- pandoc.table.return(its_coefs, caption = caption,
+                                   split.tables = Inf, missing = "—")
+
+cat(tbl_its_all)
+cat(tbl_its_all, 
+    file = file.path(here(), "output", "tables", "app_models_C3_all.md"))
+```
 
 
 # Country fixed effects for OLS models
