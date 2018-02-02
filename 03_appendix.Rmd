@@ -357,7 +357,7 @@ tbl_ols_all <- pandoc.table.return(ols_coefs, caption = caption,
 
 cat(tbl_ols_all)
 cat(tbl_ols_all, 
-    file = file.path(here(), "output", "tables", "app_table_ols_all.md"))
+    file = file.path(here(), "output", "tables", "app_models_B3_all.md"))
 ```
 
 
