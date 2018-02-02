@@ -148,7 +148,7 @@ model_in_2001 <- glm(in_2001_lead ~ gdpcap_ln + gdpgrowth + polity + pop_ln +
 model_in_2001_robust <- robust_clusterify(model_in_2001, edb_in_2001, "ccode") %>%
   magrittr::use_series(coefs) %>% tidy()
 
-model_in_2001_out <- stargazer(model_in_2001, type = "text", dep.var.caption = "",
+model_in_2001_out <- stargazer(model_in_2001, type = "html", dep.var.caption = "",
                                dep.var.labels = "in\\_2001\\_lead",
                                se = list(model_in_2001_robust$std.error),
                                notes = "Logit model. Robust standard errors clustered by country.")
