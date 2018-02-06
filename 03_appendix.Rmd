@@ -862,7 +862,54 @@ ggsave(plot_model_committee,
        width = 6, height = 4, units = "in", type = "cairo", dpi = 300)
 ```
 
-## Table F2: Correlates of relevant variables with selection into 2001 sample and with outcomes
+## Table F2: Correlates of control variables from Models A1–A5
+
+```{r tbl-sig-summary-a1-a5, results="asis"}
+edb_checks_a2_a5 <- edb_checks_models %>%
+  unnest(tidy_robust) %>% select(-grouping)
+
+edb_checks_a1 <- model_in_2001_robust %>% mutate(outcome = "in_2001")
+
+model_names <- tribble(
+  ~model, ~outcome,
+  "A",    "in_2001",
+  "B",    "sb_days_ln",
+  "C",    "sb_proced",
+  "D",    "sb_cost_ln",
+  "E",    "sb_capital_ln"
+) %>%
+  mutate(name_clean = paste0("Model ", model, "<br>", "`", outcome, "`"))
+
+edb_checks_significance <- bind_rows(edb_checks_a1, edb_checks_a2_a5) %>%
+  left_join(model_names, by = "outcome") %>%
+  filter(term != "(Intercept)", !str_detect(term, "sb_")) %>%
+  mutate(significance = case_when(
+    p.value < 0.10 & sign(estimate) == 1 ~ "+",
+    p.value < 0.10 & sign(estimate) == -1 ~ "−",
+    TRUE ~ ""
+  )) %>%
+  mutate(term = paste0("`", term, "`"),
+         term = fct_inorder(term, ordered = TRUE)) %>%
+  select(` ` = term, significance, name_clean) %>%
+  spread(name_clean, significance)
+
+caption <- "Correlates of relevant variables with selection into 2001 sample and with outcomes"
+
+tbl_edb_checks_sig <- pandoc.table.return(edb_checks_significance, 
+                                          caption = caption, 
+                                          split.tables = Inf,
+                                          justify = "lccccc", missing = "", 
+                                          style = "multiline",
+                                          keep.line.breaks = TRUE)
+
+cat(tbl_edb_checks_sig)
+cat(tbl_edb_checks_sig, 
+    file = file.path(here(), "output", "tables", "app_table_F2.md"))
+```
+
+*Note*: A negative coefficient for the outcome variables indicates improvements.
+
+For models and measures, see section "How control variables relate to being in the sample and to the outcomes" above.
 
 
 ## Table F3: Rankings in 2005 and 2014
