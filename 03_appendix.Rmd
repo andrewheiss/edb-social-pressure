@@ -830,7 +830,7 @@ model_committee_out <- stargazer(model_committee, type = "html",
 ```{r tbl-reform-committee-presence, results="asis"}
 cat(paste(escape_stars(model_committee_out), collapse = "\n"), "\n")
 cat(paste(model_committee_out, collapse = "\n"), "\n",
-    file = file.path(here(), "output", "tables", "app_tbl_F3.html"))
+    file = file.path(here(), "output", "tables", "app_tbl_F1.html"))
 ```
 
 ## Figure F1: Correlates of reform committee presence
@@ -866,6 +866,41 @@ ggsave(plot_model_committee,
 
 
 ## Table F3: Rankings in 2005 and 2014
+
+```{r reform-committee-2005-2014, results="hide"}
+edb_rankings <- edb_clean %>%
+  select(ccode, year, p_edb_rank, has_bureau) %>%
+  filter(year %in% c(2005, 2014)) %>%
+  spread(year, p_edb_rank) %>%
+  mutate(change_in_ranking = `2014` - `2005`)
+
+model_rankings <- lm(`2014` ~ `2005` + has_bureau,
+                     data = edb_rankings)
+
+model_rankings_interaction <- lm(`2014` ~ `2005` + has_bureau + `2005` * has_bureau,
+                                 data = edb_rankings)
+
+model_rankings_change <- lm(change_in_ranking ~ has_bureau,
+                            data = edb_rankings)
+
+var_labs <- c("2005 ranking", "Has reform committee",
+              "2005 ranking × has reform committee")
+
+model_rankings_out <- stargazer(model_rankings, model_rankings_interaction, 
+                                model_rankings_change,
+                                type = "html",
+                                dep.var.caption = "",
+                                dep.var.labels = c("2014", "Change in ranking"),
+                                covariate.labels = var_labs,
+                                notes = "OLS models. Non-robust standard errors.",
+                                keep.stat = c("n", "rsq", "adj.rsq"))
+```
+
+```{r tbl-reform-committee-2005-2014, results="asis"}
+cat(paste(escape_stars(model_rankings_out), collapse = "\n"), "\n")
+cat(paste(model_rankings_out, collapse = "\n"), "\n",
+    file = file.path(here(), "output", "tables", "app_tbl_F3.html"))
+```
 
 
 # India experiment survey text
