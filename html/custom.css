@@ -1,0 +1,14 @@
+/* These overrides are necessary because pandoc now creates actual sections instead of <div class="section">, but the Bootstrap template still looks for classes named section.  */
+section h1, section h2, section h3, section h4, section h5, section h6 {
+    padding-top: 65px;
+    margin-top: -65px;
+}
+
+/* These overrides are necessary because of the fixed navbar in Bootstrap. The template inserts CSS in the <head> that adds top-margin: -65px and top-padding: 65px to allow anchored links to show up correctly. But doing that also kills the space before the headings, which is dumb. So here I add 21px/10.5px (the original amounts) of top padding for each heading, on top of the 65px for anchor jumping.  */
+section h1, section h2, section h3 {
+    padding-top: 86px !important;
+}
+
+section h4, section h5, section h6 {
+    padding-top: 75.5px !important;
+}
