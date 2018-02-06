@@ -521,11 +521,3 @@ ggsave(plot_chn_ind,
        filename = file.path(here(), "output", "figures", "chn_ind_exposure.png"),
        width = 6, height = 3, units = "in", type = "cairo", dpi = 300)
 ```
-
-
-```{r convert-tables, include=FALSE}
-# Convert all Markdown tables to .docx
-Sys.glob(file.path(here(), "output", "tables", "*.md")) %>%
-  map(~ Pandoc.convert(., format = "docx", footer = FALSE,
-                       proc.time = FALSE, open = FALSE))
-```

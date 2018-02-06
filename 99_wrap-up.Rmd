@@ -1,0 +1,28 @@
+---
+title: "Final things to run"
+author: "Andrew Heiss"
+date: "Last run: `r format(Sys.time(), '%B %e, %Y')`"
+output:
+  html_document:
+    code_folding: show
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(cache = FALSE, fig.retina = 2,
+                      tidy.opts = list(width.cutoff = 120),  # For code
+                      width = 120)  # For output
+
+library(tidyverse)
+library(pander)
+library(here)
+```
+
+# Convert all Markdown tables to `.docx`
+
+```{r convert-tables, include=FALSE}
+Sys.glob(file.path(here(), "output", "tables", "*.md")) %>%
+  map(~ Pandoc.convert(., format = "docx", footer = FALSE,
+                       proc.time = FALSE, open = FALSE))
+```
