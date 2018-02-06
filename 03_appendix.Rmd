@@ -65,6 +65,8 @@ cat(tbl_var_descriptions,
 
 # Variable summaries
 
+The small inline histograms in this table will only display correctly when they use a font that supports block elements, such as [DejaVu Sans](https://dejavu-fonts.github.io/) or Arial.
+
 ```{r tbl-vars-summary, results="asis", warning=FALSE, message=FALSE}
 edb_summary_stats <- edb_clean %>%
   select(one_of(edb_summary_base$Variable)) %>%
