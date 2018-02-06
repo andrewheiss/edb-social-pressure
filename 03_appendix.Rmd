@@ -576,7 +576,7 @@ tbl_country_fe <- pandoc.table.return(ranked_coefs_country, caption = caption,
 
 cat(tbl_country_fe)
 cat(tbl_country_fe, 
-    file = file.path(here(), "output", "tables", "app_tbl_D1.md"))
+    file = file.path(here(), "output", "tables", "app_table_D1.md"))
 ```
 
 *Note*: Main controls are `gdpcap_ln_lag`, `gdpgrowth_lag`, `polity_lag`, and `pop_ln_lag`
@@ -605,7 +605,7 @@ sb_country_fe_models_out <- stargazer(sb_fe$model, type = "html",
 ```{r tbl-sb-country-fe, results="asis"}
 cat(paste(escape_stars(sb_country_fe_models_out), collapse = "\n"), "\n")
 cat(paste(sb_country_fe_models_out, collapse = "\n"), "\n",
-    file = file.path(here(), "output", "tables", "app_tbl_D2.html"))
+    file = file.path(here(), "output", "tables", "app_table_D2.html"))
 ```
 
 ## Table D3: Sub-indicators for "Enforcing Contracts" with and without country fixed effects
@@ -631,7 +631,7 @@ con_country_fe_models_out <- stargazer(con_fe$model, type = "html",
 ```{r tbl-con-country-fe, results="asis"}
 cat(paste(escape_stars(con_country_fe_models_out), collapse = "\n"), "\n")
 cat(paste(con_country_fe_models_out, collapse = "\n"), "\n",
-    file = file.path(here(), "output", "tables", "app_tbl_D3.html"))
+    file = file.path(here(), "output", "tables", "app_table_D3.html"))
 ```
 
 
@@ -742,7 +742,7 @@ tbl_year_fe <- pandoc.table.return(ranked_coefs_year, caption = caption,
 
 cat(tbl_year_fe)
 cat(tbl_year_fe, 
-    file = file.path(here(), "output", "tables", "app_tbl_E1.md"))
+    file = file.path(here(), "output", "tables", "app_table_E1.md"))
 ```
 
 *Note*: Main controls are `gdpcap_ln_lag`, `gdpgrowth_lag`, `polity_lag`, and `pop_ln_lag`
@@ -770,7 +770,7 @@ sb_year_fe_models_out <- stargazer(sb_fe_year$model, type = "html",
 ```{r tbl-sb-year-fe, results="asis"}
 cat(paste(escape_stars(sb_year_fe_models_out), collapse = "\n"), "\n")
 cat(paste(sb_year_fe_models_out, collapse = "\n"), "\n",
-    file = file.path(here(), "output", "tables", "app_tbl_E2.html"))
+    file = file.path(here(), "output", "tables", "app_table_E2.html"))
 ```
 
 ## Table E3: Sub-indicators for "Enforcing Contracts" with and without year fixed effects
@@ -796,7 +796,7 @@ con_year_fe_models_out <- stargazer(con_fe_year$model, type = "html",
 ```{r tbl-con-year-fe, results="asis"}
 cat(paste(escape_stars(con_year_fe_models_out), collapse = "\n"), "\n")
 cat(paste(con_year_fe_models_out, collapse = "\n"), "\n",
-    file = file.path(here(), "output", "tables", "app_tbl_E3.html"))
+    file = file.path(here(), "output", "tables", "app_table_E3.html"))
 ```
 
 
@@ -830,7 +830,7 @@ model_committee_out <- stargazer(model_committee, type = "html",
 ```{r tbl-reform-committee-presence, results="asis"}
 cat(paste(escape_stars(model_committee_out), collapse = "\n"), "\n")
 cat(paste(model_committee_out, collapse = "\n"), "\n",
-    file = file.path(here(), "output", "tables", "app_tbl_F1.html"))
+    file = file.path(here(), "output", "tables", "app_table_F1.html"))
 ```
 
 ## Figure F1: Correlates of reform committee presence
@@ -946,7 +946,7 @@ model_rankings_out <- stargazer(model_rankings, model_rankings_interaction,
 ```{r tbl-reform-committee-2005-2014, results="asis"}
 cat(paste(escape_stars(model_rankings_out), collapse = "\n"), "\n")
 cat(paste(model_rankings_out, collapse = "\n"), "\n",
-    file = file.path(here(), "output", "tables", "app_tbl_F3.html"))
+    file = file.path(here(), "output", "tables", "app_table_F3.html"))
 ```
 
 
