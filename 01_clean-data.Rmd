@@ -158,7 +158,8 @@ edb_clean <- read_dta(file.path(here(), "data_raw", "MasterWBMarch16_15.dta")) %
          ranked_2013 = year_centered_2013 >= 0)  %>%
   # Lag variables within countries
   group_by(ccode) %>%
-  mutate(loan_ln = log1p(sum(ibrd, na.rm = TRUE))) %>%
+  mutate(loan_ln = log1p(sum(ibrd, na.rm = TRUE)),
+         loan_bin = loan_ln > 0) %>%
   mutate_all(funs(lag = lag(.))) %>%
   # Normalize rankings within years
   group_by(year) %>%
