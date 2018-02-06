@@ -41,7 +41,7 @@ if (Sys.info()['sysname'] == "Darwin" & python3 & stargazer2word) {
 
 # Convert all Markdown tables to `.docx`
 
-```{r convert-md-tables}
+```{r convert-md-tables, results="hide"}
 Sys.glob(file.path(here(), "output", "tables", "*.md")) %>%
   map(~ Pandoc.convert(., format = "docx", footer = FALSE,
                        proc.time = FALSE, open = FALSE))
