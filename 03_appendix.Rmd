@@ -470,21 +470,341 @@ cat(tbl_its_all,
 
 # Country fixed effects for OLS models
 
+## Table D1
 
-## Table C1
+```{r ranked-country-fe, warning=FALSE}
+# All the FE models to be run
+country_fe_models <- expand.grid(outcome = c("sb_proced", "sb_days_ln",
+                                             "sb_cost_ln", "sb_capital_ln",
+                                             "con_proced", "con_days"),
+                                 controls = c("Main", 
+                                              "Main + `civtot_lag` + `inttot_lag` + `loan_ln_lag`", 
+                                              "Main + `civtot_lag` + `inttot_lag` + `loan_bin_lag`", 
+                                              "Main + fixed effects",
+                                              "Main - 2001", "Main - 2001 & 2002"),
+                                 stringsAsFactors = FALSE) %>%
+  mutate(country_fe = controls %in% c("Main + fixed effects", "Main - 2001", "Main - 2001 & 2002"),
+         df_to_use = case_when(
+           controls == "Main - 2001" ~ "Drop 2001",
+           controls == "Main - 2001 & 2002" ~ "Drop 2002",
+           TRUE ~ "Full" 
+         ))
 
-## Table C2
+# Nest filtered data into a data frame
+data_to_use <- tribble(
+  ~df_to_use,  ~data,
+  "Full",      edb_clean %>% filter(year > 2000, in_2004 == 1),
+  "Drop 2001", edb_clean %>% filter(year > 2001, in_2004 == 1),
+  "Drop 2002", edb_clean %>% filter(year > 2002, in_2004 == 1)
+)
 
-## Table C3
+# Combine filtered data with all model parameters
+country_fe_models_full <- data_to_use %>%
+  right_join(country_fe_models, by = "df_to_use") %>%
+  select(-df_to_use)
+
+# Build and run a bunch of different models based on parameters that determine
+# what controls to add and whether or not to include country fixed effects
+run_country_fe_models <- function(outcome, controls, country_fe, df) {
+  main_controls <- "gdpcap_ln_lag + gdpgrowth_lag + polity_lag + pop_ln_lag"
+  
+  if (str_detect(controls, "loan_ln_lag")) {
+    additional_controls <- " + civtot_lag + inttot_lag + loan_ln_lag"
+  } else if (str_detect(controls, "loan_bin_lag")) {
+    additional_controls <- " + civtot_lag + inttot_lag + loan_bin_lag"
+  } else {
+    additional_controls <- ""
+  }
+  
+  if (country_fe) {
+    country <- " + as.factor(ccode)"
+  } else {
+    country <- ""
+  }
+
+  form <- paste0(outcome, " ~ ", paste0(outcome, "_lag"), " + ranked_lag + ", 
+                 main_controls, additional_controls, country) %>%
+    as.formula()
+
+  lm(form, data = df)
+}
+
+# Run all the models within the data frame
+country_fe_models_all <- country_fe_models_full %>%
+  mutate(model = pmap(.l = list(outcome, controls, country_fe, data), 
+                      run_country_fe_models),
+         # Add robust clustered SEs
+         robust_se = pmap(.l = list(model, data, "ccode"), robust_clusterify),
+         # Add model summary statistics
+         glance = model %>% map(glance),
+         # Add a data frame of model parameters with correct SEs
+         tidy_robust = robust_se %>% map(~ tidy(.$coef)),
+         ses_only = tidy_robust %>% map(~ .$std.error))
+
+# Make tiny data frame indicating if model had country fixed effects
+fixed_effects_country <- country_fe_models %>%
+  select(controls, country_fe) %>%
+  distinct() %>%
+  mutate(country_fe = ifelse(country_fe, "Yes", "No")) %>%
+  spread(controls, country_fe) %>%
+  mutate(Outcome = "Fixed country effects")
+
+# Display all the ranked coefficients
+ranked_coefs_country <- country_fe_models_all %>%
+  # Spread out the model results
+  unnest(tidy_robust) %>%
+  filter(str_detect(term, "ranked")) %>%
+  # Clean up the estimates and add stars
+  mutate(value = paste0(sprintf("%.3f", round(estimate, 3)), p_stars(p.value)),
+         outcome = factor(outcome, levels = unique(country_fe_models$outcome),
+                          labels = paste0("`", unique(country_fe_models$outcome), "`"),
+                          ordered = TRUE),
+         controls = factor(controls, levels = unique(country_fe_models$controls),
+                           ordered = TRUE)) %>%
+  # Get rid of extra columns
+  select(Outcome = outcome, controls, value) %>%
+  spread(controls, value) %>%
+  bind_rows(fixed_effects_country)
+```
+
+```{r tbl-country-fe-ranked, results="asis"}
+caption <- 'Summary of coefficients for the lagged "Ranked" variable with and without country fixed effects'
+
+tbl_country_fe <- pandoc.table.return(ranked_coefs_country, caption = caption,
+                                      split.tables = Inf)
+
+cat(tbl_country_fe)
+cat(tbl_country_fe, 
+    file = file.path(here(), "output", "tables", "app_tbl_D1.md"))
+```
+
+*Note*: Main controls are `gdpcap_ln_lag`, `gdpgrowth_lag`, `polity_lag`, and `pop_ln_lag`
+
+
+## Table D2
+
+Sub-indicators for "Starting a Business" with and without country fixed effects.
+
+```{r sb-country-fe, results="hide"}
+sb_fe <- country_fe_models_all %>%
+  filter(str_detect(outcome, "sb_"),
+         controls %in% c("Main + fixed effects", 
+                         "Main + `civtot_lag` + `inttot_lag` + `loan_bin_lag`")) %>%
+  mutate(outcome = fct_inorder(outcome, ordered = TRUE)) %>%
+  arrange(outcome)
+
+sb_country_fe_models_out <- stargazer(sb_fe$model, type = "html", 
+                                      dep.var.caption = "",
+                                      se = sb_fe$ses_only,
+                                      notes = "OLS models. Robust standard errors clustered by country.",
+                                      keep.stat = c("n", "rsq", "adj.rsq"),
+                                      add.lines = list(c("Country fixed effects", 
+                                                         rep(c("No", "Yes"), 4))),
+                                      omit = "ccode")
+```
+
+```{r tbl-sb-country-fe, results="asis"}
+cat(paste(escape_stars(sb_country_fe_models_out), collapse = "\n"), "\n")
+cat(paste(sb_country_fe_models_out, collapse = "\n"), "\n",
+    file = file.path(here(), "output", "tables", "app_tbl_D2.html"))
+```
+
+## Table D3
+
+Sub-indicators for "Enforcing Contracts" with and without country fixed effects.
+
+```{r con-country-fe, results="hide"}
+con_fe <- country_fe_models_all %>%
+  filter(str_detect(outcome, "con_"),
+         controls %in% c("Main + fixed effects", 
+                         "Main + `civtot_lag` + `inttot_lag` + `loan_bin_lag`")) %>%
+  mutate(outcome = fct_inorder(outcome, ordered = TRUE)) %>%
+  arrange(outcome)
+
+con_country_fe_models_out <- stargazer(con_fe$model, type = "html", 
+                                       dep.var.caption = "",
+                                       se = con_fe$ses_only,
+                                       notes = "OLS models. Robust standard errors clustered by country.",
+                                       keep.stat = c("n", "rsq", "adj.rsq"),
+                                       add.lines = list(c("Country fixed effects", 
+                                                          rep(c("No", "Yes"), 4))),
+                                       omit = "ccode")
+```
+
+```{r tbl-con-country-fe, results="asis"}
+cat(paste(escape_stars(con_country_fe_models_out), collapse = "\n"), "\n")
+cat(paste(con_country_fe_models_out, collapse = "\n"), "\n",
+    file = file.path(here(), "output", "tables", "app_tbl_D3.html"))
+```
 
 
 # Year fixed effects for OLS models
 
-## Table D1
+## Table E1
 
-## Table D2
+```{r ranked-year-fe, warning=FALSE}
+# All the FE models to be run
+year_fe_models <- expand.grid(outcome = c("sb_proced", "sb_days_ln",
+                                          "sb_cost_ln", "sb_capital_ln",
+                                          "con_proced", "con_days"),
+                              controls = c("Main", 
+                                           "Main + `civtot_lag` + `inttot_lag` + `loan_ln_lag`", 
+                                           "Main + `civtot_lag` + `inttot_lag` + `loan_bin_lag`", 
+                                           "Main + fixed effects",
+                                           "Main - 2001", "Main - 2001 & 2002"),
+                              stringsAsFactors = FALSE) %>%
+  mutate(year_fe = controls %in% c("Main + fixed effects", "Main - 2001", "Main - 2001 & 2002"),
+         df_to_use = case_when(
+           controls == "Main - 2001" ~ "Drop 2001",
+           controls == "Main - 2001 & 2002" ~ "Drop 2002",
+           TRUE ~ "Full" 
+         ))
 
-## Table D3
+# Nest filtered data into a data frame
+data_to_use <- tribble(
+  ~df_to_use,  ~data,
+  "Full",      edb_clean %>% filter(year > 2000, in_2004 == 1),
+  "Drop 2001", edb_clean %>% filter(year > 2001, in_2004 == 1),
+  "Drop 2002", edb_clean %>% filter(year > 2002, in_2004 == 1)
+)
+
+# Combine filtered data with all model parameters
+year_fe_models_full <- data_to_use %>%
+  right_join(year_fe_models, by = "df_to_use") %>%
+  select(-df_to_use)
+
+# Build and run a bunch of different models based on parameters that determine
+# what controls to add and whether or not to include country fixed effects
+run_year_fe_models <- function(outcome, controls, year_fe, df) {
+  main_controls <- "gdpcap_ln_lag + gdpgrowth_lag + polity_lag + pop_ln_lag"
+  
+  if (str_detect(controls, "loan_ln_lag")) {
+    additional_controls <- " + civtot_lag + inttot_lag + loan_ln_lag"
+  } else if (str_detect(controls, "loan_bin_lag")) {
+    additional_controls <- " + civtot_lag + inttot_lag + loan_bin_lag"
+  } else {
+    additional_controls <- ""
+  }
+  
+  if (year_fe) {
+    year <- " + as.factor(year)"
+  } else {
+    year <- ""
+  }
+
+  form <- paste0(outcome, " ~ ", paste0(outcome, "_lag"), " + ranked_lag + ", 
+                 main_controls, additional_controls, year) %>%
+    as.formula()
+
+  lm(form, data = df)
+}
+
+# Run all the models within the data frame
+year_fe_models_all <- year_fe_models_full %>%
+  mutate(model = pmap(.l = list(outcome, controls, year_fe, data), 
+                      run_year_fe_models),
+         # Add robust clustered SEs
+         robust_se = pmap(.l = list(model, data, "ccode"), robust_clusterify),
+         # Add model summary statistics
+         glance = model %>% map(glance),
+         # Add a data frame of model parameters with correct SEs
+         tidy_robust = robust_se %>% map(~ tidy(.$coef)),
+         ses_only = tidy_robust %>% map(~ .$std.error))
+
+# Make tiny data frame indicating if model had country fixed effects
+fixed_effects_year <- year_fe_models %>%
+  select(controls, year_fe) %>%
+  distinct() %>%
+  mutate(year_fe = ifelse(year_fe, "Yes", "No")) %>%
+  spread(controls, year_fe) %>%
+  mutate(Outcome = "Fixed year effects")
+
+# Display all the ranked coefficients
+ranked_coefs_year <- year_fe_models_all %>%
+  # Spread out the model results
+  unnest(tidy_robust) %>%
+  filter(str_detect(term, "ranked")) %>%
+  # Clean up the estimates and add stars
+  mutate(value = paste0(sprintf("%.3f", round(estimate, 3)), p_stars(p.value)),
+         outcome = factor(outcome, levels = unique(year_fe_models$outcome),
+                          labels = paste0("`", unique(year_fe_models$outcome), "`"),
+                          ordered = TRUE),
+         controls = factor(controls, levels = unique(year_fe_models$controls),
+                           ordered = TRUE)) %>%
+  # Get rid of extra columns
+  select(Outcome = outcome, controls, value) %>%
+  spread(controls, value) %>%
+  bind_rows(fixed_effects_year)
+```
+
+```{r tbl-year-fe-ranked, results="asis"}
+caption <- 'Summary of coefficients for the lagged "Ranked" variable with and without country fixed effects'
+
+tbl_year_fe <- pandoc.table.return(ranked_coefs_year, caption = caption,
+                                   split.tables = Inf)
+
+cat(tbl_year_fe)
+cat(tbl_year_fe, 
+    file = file.path(here(), "output", "tables", "app_tbl_E1.md"))
+```
+
+*Note*: Main controls are `gdpcap_ln_lag`, `gdpgrowth_lag`, `polity_lag`, and `pop_ln_lag`
+
+## Table E2
+
+Sub-indicators for "Starting a Business" with and without year fixed effects.
+
+```{r sb-year-fe, results="hide"}
+sb_fe_year <- year_fe_models_all %>%
+  filter(str_detect(outcome, "sb_"),
+         controls %in% c("Main + fixed effects", 
+                         "Main + `civtot_lag` + `inttot_lag` + `loan_bin_lag`")) %>%
+  mutate(outcome = fct_inorder(outcome, ordered = TRUE)) %>%
+  arrange(outcome)
+
+sb_year_fe_models_out <- stargazer(sb_fe_year$model, type = "html", 
+                                   dep.var.caption = "",
+                                   se = sb_fe_year$ses_only,
+                                   notes = "OLS models. Robust standard errors clustered by country.",
+                                   keep.stat = c("n", "rsq", "adj.rsq"),
+                                   add.lines = list(c("Year fixed effects", 
+                                                      rep(c("No", "Yes"), 4))),
+                                   omit = "year")
+```
+
+```{r tbl-sb-year-fe, results="asis"}
+cat(paste(escape_stars(sb_year_fe_models_out), collapse = "\n"), "\n")
+cat(paste(sb_year_fe_models_out, collapse = "\n"), "\n",
+    file = file.path(here(), "output", "tables", "app_tbl_E2.html"))
+```
+
+## Table E3
+
+Sub-indicators for "Enforcing Contracts" with and without year fixed effects.
+
+```{r con-year-fe, results="hide"}
+con_fe_year <- year_fe_models_all %>%
+  filter(str_detect(outcome, "con_"),
+         controls %in% c("Main + fixed effects", 
+                         "Main + `civtot_lag` + `inttot_lag` + `loan_bin_lag`")) %>%
+  mutate(outcome = fct_inorder(outcome, ordered = TRUE)) %>%
+  arrange(outcome)
+
+con_year_fe_models_out <- stargazer(con_fe_year$model, type = "html", 
+                                    dep.var.caption = "",
+                                    se = con_fe_year$ses_only,
+                                    notes = "OLS models. Robust standard errors clustered by country.",
+                                    keep.stat = c("n", "rsq", "adj.rsq"),
+                                    add.lines = list(c("Year fixed effects", 
+                                                       rep(c("No", "Yes"), 4))),
+                                    omit = "year")
+```
+
+```{r tbl-con-year-fe, results="asis"}
+cat(paste(escape_stars(con_year_fe_models_out), collapse = "\n"), "\n")
+cat(paste(con_year_fe_models_out, collapse = "\n"), "\n",
+    file = file.path(here(), "output", "tables", "app_tbl_E3.html"))
+```
 
 
 # Description of Reform Coding
