@@ -30,7 +30,7 @@ All the figures and tables for the paper can be replicated and reproduced with R
 This can be done with this R code:
 
 ```{r install-packages, eval=FALSE}
-install.packages(c("tidyverse", "here", "gridExtra", "ggrepel", "ggstance", 
+install.packages(c("tidyverse", "here", "skimr", "gridExtra", "ggrepel", "ggstance", 
                    "pander", "countrycode", "sandwich", "lmtest"))
 ```
 

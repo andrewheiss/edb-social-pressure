@@ -24,7 +24,7 @@ All the figures and tables for the paper can be replicated and reproduced with R
 This can be done with this R code:
 
 ```r
-install.packages(c("tidyverse", "here", "gridExtra", "ggrepel", "ggstance", 
+install.packages(c("tidyverse", "here", "skimr", "gridExtra", "ggrepel", "ggstance", 
                    "pander", "countrycode", "sandwich", "lmtest"))
 ```
 
@@ -34,6 +34,8 @@ Also, install these additional items:
 - [XQuartz](https://www.xquartz.org/) if on macOS
 - [RStudio](https://www.rstudio.com/products/rstudio/download/#download)
 
+The small inline histograms in the summary statitics table in the appendix will only display correctly when they use a font that supports block elements, such as [DejaVu Sans](https://dejavu-fonts.github.io/) or Arial.
+
 The project is structured as an RStudio project and uses [RMarkdown](http://rmarkdown.rstudio.com/rmarkdown_websites.html) to generate a website in the `_site/` subdirectory. This is currently hosted online at <https://stats.andrewheiss.com/edb-social-pressure/>, but the `_site/` directory can be uploaded anywhere else too. 
 
 Open RStudio and go to Build > Build All to run all the scripts and generate everything. After building, you should have the following files:
@@ -42,3 +44,9 @@ Open RStudio and go to Build > Build All to run all the scripts and generate eve
 - `output/data/`: CSV, R, and Stata versions of the cleaned data used in the analysis
 - `output/tables/`: Markdown and .docx versions of the generated tables
 - `output/figures`: PDF and PNG versions of the generated figures
+
+**Bonus table conversion**: The majority of the project's tables are generated with Markdown and automatically converted to .docx when the project is built. Tables created with `stargazer`, however, do not support Markdown and instead exported as HTML files. You need to open these HTML files directly in Word to copy/paste to a different document.
+
+Alternatively, the script included at `bin/stargazer2word.py` will find all `stargazer`-generated HTML tables and save them as well-formatted .docx files automatically. This script requires Python 3 and the BeautifulSoup package, and the script will only run on macOS with Microsoft Word installed. 
+
+Currently, this script tries to run when `99_wrap-up.Rmd` is built, but there are checks to ensure it doesn't try to run on Windows or Linux, or if Python 3 isn't installed. For an additional precaution, the variable `stargazer2word` also must be set to `TRUE` for the conversion script to run. If you have macOS and Python 3 + BeautifulSoup and Word and you want to have R convert all the tables for you, manually edit `99_wrap-up.Rmd` and set `stargazer2word <- TRUE`.  
