@@ -470,7 +470,7 @@ cat(tbl_its_all,
 
 # Country fixed effects for OLS models
 
-## Table D1
+## Table D1: "Ranked" coefficients with and without country fixed effects
 
 ```{r ranked-country-fe, warning=FALSE}
 # All the FE models to be run
@@ -581,9 +581,7 @@ cat(tbl_country_fe,
 *Note*: Main controls are `gdpcap_ln_lag`, `gdpgrowth_lag`, `polity_lag`, and `pop_ln_lag`
 
 
-## Table D2
-
-Sub-indicators for "Starting a Business" with and without country fixed effects.
+## Table D2: Sub-indicators for "Starting a Business" with and without country fixed effects
 
 ```{r sb-country-fe, results="hide"}
 sb_fe <- country_fe_models_all %>%
@@ -609,9 +607,7 @@ cat(paste(sb_country_fe_models_out, collapse = "\n"), "\n",
     file = file.path(here(), "output", "tables", "app_tbl_D2.html"))
 ```
 
-## Table D3
-
-Sub-indicators for "Enforcing Contracts" with and without country fixed effects.
+## Table D3: Sub-indicators for "Enforcing Contracts" with and without country fixed effects
 
 ```{r con-country-fe, results="hide"}
 con_fe <- country_fe_models_all %>%
@@ -640,7 +636,7 @@ cat(paste(con_country_fe_models_out, collapse = "\n"), "\n",
 
 # Year fixed effects for OLS models
 
-## Table E1
+## Table E1: "Ranked" coefficients with and without year fixed effects
 
 ```{r ranked-year-fe, warning=FALSE}
 # All the FE models to be run
@@ -750,9 +746,7 @@ cat(tbl_year_fe,
 
 *Note*: Main controls are `gdpcap_ln_lag`, `gdpgrowth_lag`, `polity_lag`, and `pop_ln_lag`
 
-## Table E2
-
-Sub-indicators for "Starting a Business" with and without year fixed effects.
+## Table E2: Sub-indicators for "Starting a Business" with and without year fixed effects
 
 ```{r sb-year-fe, results="hide"}
 sb_fe_year <- year_fe_models_all %>%
@@ -778,9 +772,7 @@ cat(paste(sb_year_fe_models_out, collapse = "\n"), "\n",
     file = file.path(here(), "output", "tables", "app_tbl_E2.html"))
 ```
 
-## Table E3
-
-Sub-indicators for "Enforcing Contracts" with and without year fixed effects.
+## Table E3: Sub-indicators for "Enforcing Contracts" with and without year fixed effects
 
 ```{r con-year-fe, results="hide"}
 con_fe_year <- year_fe_models_all %>%
