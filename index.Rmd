@@ -49,7 +49,7 @@ Open RStudio and go to Build > Build All to run all the scripts and generate eve
 - `_site/`: the complete website
 - `output/data/`: CSV, R, and Stata versions of the cleaned data used in the analysis
 - `output/tables/`: Markdown and .docx versions of the generated tables
-- `output/figures`: PDF and PNG versions of the generated figures
+- `output/figures/`: PDF and PNG versions of the generated figures
 
 **Bonus table conversion**: The majority of the project's tables are generated with Markdown and automatically converted to .docx when the project is built. Tables created with `stargazer`, however, do not support Markdown and instead exported as HTML files. You need to open these HTML files directly in Word to copy/paste to a different document.
 
