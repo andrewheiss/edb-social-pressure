@@ -19,9 +19,29 @@ library(pander)
 library(here)
 ```
 
+# Convert all Stargazer HTML files to `.docx`
+
+*Note*: This will only work on macOS with Python 3 and BeautifulSoup installed.
+
+As an extra precaution, `stargazer2word` must also be set to `TRUE` to work. You have to do that manually below.
+
+```{r convert-stargazer-tables}
+stargazer2word <- FALSE
+
+check_python3 <- system("which python3", intern = TRUE)
+python3 <- length(check_python3) > 0
+
+if (Sys.info()['sysname'] == "Darwin" & python3 & stargazer2word) {
+  change.dir <- paste('cd "', file.path(here(), "bin"), '"', sep = "")
+  command <- paste("python3 stargazer2docx.py")
+  full.command <- paste(change.dir, command, sep = "; ")
+  system(full.command)
+}
+```
+
 # Convert all Markdown tables to `.docx`
 
-```{r convert-tables, include=FALSE}
+```{r convert-md-tables}
 Sys.glob(file.path(here(), "output", "tables", "*.md")) %>%
   map(~ Pandoc.convert(., format = "docx", footer = FALSE,
                        proc.time = FALSE, open = FALSE))
