@@ -122,7 +122,7 @@ edb_clean <- read_dta(file.path(here(), "data_raw", "MasterWBMarch16_15.dta")) %
          sb_proced, sb_days, sb_capital, sb_cost, con_proced, con_days,
          contains("_reform"),
          gdp, gdpcap, pop, gdpgrowth, polity = polity2, ibrd,
-         inttot, civtot, p_edb_rank) %>%
+         inttot, civtot, p_edb_rank, yrsoffc, icrg_index, fdi_inper, trade) %>%
   # Make variable indicating if country has a reform bureau
   mutate(has_bureau = ccode %in% edb_bureau$cowcode,
          has_bureau = factor(has_bureau, 
