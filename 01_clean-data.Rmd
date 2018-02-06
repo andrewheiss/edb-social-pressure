@@ -114,6 +114,7 @@ Clean and munge the master Stata file.
 
 ```{r clean-stata}
 edb_clean <- read_dta(file.path(here(), "data_raw", "MasterWBMarch16_15.dta")) %>%
+  zap_formats() %>% zap_labels() %>%
   # Filter and select a subset of the original data
   filter(year > 1999) %>%
   rename(p_edb_rank = p_ebd_rank) %>%
