@@ -17,6 +17,7 @@ knitr::opts_chunk$set(cache = FALSE, fig.retina = 2,
 
 ```{r load-libraries-data-functions, message=FALSE, warning=FALSE}
 library(tidyverse)
+library(ggstance)
 library(broom)
 library(countrycode)
 library(pander)
@@ -151,7 +152,7 @@ model_in_2001_robust <- robust_clusterify(model_in_2001, edb_in_2001, "ccode") %
 model_in_2001_out <- stargazer(model_in_2001, type = "html", dep.var.caption = "",
                                dep.var.labels = "in\\_2001\\_lead",
                                se = list(model_in_2001_robust$std.error),
-                               notes = "Logit model. Robust standard errors clustered by country.")
+                               notes = "Logistic regression model. Robust standard errors clustered by country.")
 ```
 
 ```{r tbl-model-in-2001, results="asis"}
@@ -806,7 +807,65 @@ cat(paste(con_year_fe_models_out, collapse = "\n"), "\n",
 
 # What explains reform committees?
 
-A bunch of stuff from old repo…
+## Table F1: Correlates of reform committee presence
+
+```{r reform-committee-presence, results="hide"}
+model_committee = glm(has_bureau ~ p_edb_rank + icrg_index + 
+                        gdpcap + gdpgrowth + fdi_inper + trade + log1p(ibrd) +
+                        polity + yrsoffc,
+                      data = filter(edb_clean, year == 2008),
+                      family = binomial(link = "logit"))
+
+model_committee_robust <- robust_clusterify(model_committee, 
+                                            filter(edb_clean, year == 2008), "ccode") %>%
+  magrittr::use_series(coefs) %>% tidy()
+
+model_committee_out <- stargazer(model_committee, type = "html", 
+                                 dep.var.caption = "",
+                                 dep.var.labels = "has\\_bureau",
+                                 se = list(model_committee_robust$std.error),
+                                 notes = "Logsitic regression model. Year restricted to 2008. Robust standard errors clustered by country.")
+```
+
+```{r tbl-reform-committee-presence, results="asis"}
+cat(paste(escape_stars(model_committee_out), collapse = "\n"), "\n")
+cat(paste(model_committee_out, collapse = "\n"), "\n",
+    file = file.path(here(), "output", "tables", "app_tbl_F3.html"))
+```
+
+## Figure F1: Correlates of reform committee presence
+
+Coefficients from Table F1
+
+```{r fig-reform-committee-presence, fig.width=6, fig.height=4}
+committee_tidy_robust <- model_committee_robust %>%
+  filter(term != "(Intercept)") %>%
+  mutate(conf.low = estimate - std.error * qnorm(0.975),
+         conf.high = estimate + std.error * qnorm(0.975)) %>%
+  mutate_at(vars(estimate, conf.low, conf.high),
+            funs(exp = exp(.))) %>%
+  mutate(term = fct_inorder(term, ordered = TRUE))
+
+plot_model_committee <- ggplot(committee_tidy_robust, 
+                               aes(x = estimate_exp, y = fct_rev(term))) +
+  geom_vline(xintercept = 1, colour = "black") +
+  geom_pointrangeh(aes(xmin = conf.low_exp, xmax = conf.high_exp), size = 0.5) + 
+  labs(x = "Odds ratio", y = NULL) +
+  theme_edb()
+plot_model_committee
+
+ggsave(plot_model_committee, 
+       filename = file.path(here(), "output", "figures", "app_committee_presence.pdf"),
+       width = 6, height = 4, units = "in", device = cairo_pdf)
+ggsave(plot_model_committee, 
+       filename = file.path(here(), "output", "figures", "app_committee_presence.png"),
+       width = 6, height = 4, units = "in", type = "cairo", dpi = 300)
+```
+
+## Table F2: Correlates of relevant variables with selection into 2001 sample and with outcomes
+
+
+## Table F3: Rankings in 2005 and 2014
 
 
 # India experiment survey text
