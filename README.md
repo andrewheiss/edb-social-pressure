@@ -1,4 +1,4 @@
-# The Power of Ranking: The Ease of Doing Business Indicator as a form of Social Pressure
+# The Power of Ranking: The Ease of Doing Business Indicator as a Form of Social Pressure
 
 [Rush Doshi](http://rushdoshi.com/) • Harvard University  
 [Judith Kelley](https://sanford.duke.edu/people/faculty/kelley-judith) • Sanford School of Public Policy • Duke University  

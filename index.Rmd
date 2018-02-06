@@ -1,5 +1,5 @@
 ---
-title: "<strong>The Power of Ranking</strong><br><small>The Ease of Doing Business Indicator as a form of Social Pressure</small>"
+title: "<strong>The Power of Ranking</strong><br><small>The Ease of Doing Business Indicator as a Form of Social Pressure</small>"
 author: "Rush Doshi, Judith Kelley, and Beth Simmons"
 output:
   html_document:
