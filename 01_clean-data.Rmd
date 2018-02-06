@@ -127,7 +127,8 @@ edb_clean <- read_dta(file.path(here(), "data_raw", "MasterWBMarch16_15.dta")) %
          has_bureau = factor(has_bureau, 
                              levels = c(FALSE, TRUE),
                              labels = c("No EDB reform committee", 
-                                        "Special EDB reform committee"))) %>%
+                                        "Special EDB reform committee")),
+         ranked = !is.na(p_edb_rank)) %>%
   # Log variables
   mutate_at(vars(starts_with("sb"), starts_with("con"), 
                  gdp, gdpcap, pop, -contains("_reform")),
