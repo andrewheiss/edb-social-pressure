@@ -12,3 +12,8 @@ section h1, section h2, section h3 {
 section h4, section h5, section h6 {
     padding-top: 75.5px !important;
 }
+
+/* Don't add first line indent to TOC entries */
+.tocify-header {
+    text-indent: initial;
+}
