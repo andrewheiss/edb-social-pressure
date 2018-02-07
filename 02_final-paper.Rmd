@@ -483,7 +483,7 @@ edb_reforms_rankings_bumps_tests <- edb_reforms_rankings_bumps %>%
   select(Reform = reform_type_clean, 
          `Average change in rankings, committee` = mean_committee,
          `Average change in rankings, no committee` = mean_no_committee,
-         `Difference in means` = diff_in_means, t)
+         `Difference in means` = diff_in_means, `*t*` = t)
 
 caption <- 'Differences in average change in EDB rankings by reform, by committee status'
 
