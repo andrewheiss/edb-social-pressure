@@ -489,7 +489,7 @@ caption <- 'Differences in average change in EDB rankings by reform, by committe
 
 tbl_edb_reforms_diffs <- pandoc.table.return(edb_reforms_rankings_bumps_tests,
                                              caption = caption, split.tables = Inf,
-                                             digits = 2)
+                                             digits = 2, justify = "lcccc")
 
 cat(tbl_edb_reforms_diffs)
 cat(tbl_edb_reforms_diffs, 
