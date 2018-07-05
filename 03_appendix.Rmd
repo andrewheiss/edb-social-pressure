@@ -106,16 +106,10 @@ edb_bureaus <- read_csv(file.path(here(), "output", "data", "edb_bureaus.csv"))
 
 country_names <- edb_clean %>%
   filter(in_2001 == 1) %>%
-  group_by(ccode) %>%
-  summarise(cow = unique(ccode)) %>%
-  ungroup() %>%
-  mutate(has_committee = ifelse(ccode %in% edb_bureaus$cowcode, "\\*", ""),
-         Country = countrycode(cow, "cown", "country.name")) %>%
-  mutate(Country = case_when(
-    .$cow == 1001 ~ "Serbia",
-    .$cow == 1005 ~ "Hong Kong",
-    TRUE ~ .$Country
-  )) %>%
+  group_by(ccode) %>% 
+  summarize(Country = first(country_name)) %>% 
+  ungroup() %>% 
+  mutate(has_committee = ifelse(ccode %in% edb_bureaus$cowcode, "\\*", "")) %>%
   arrange(Country) %>%
   mutate(Country = paste0(Country, has_committee)) %>%
   select(Country)

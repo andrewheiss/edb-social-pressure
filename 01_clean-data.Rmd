@@ -118,11 +118,24 @@ edb_clean <- read_dta(file.path(here(), "data_raw", "MasterWBMarch16_15.dta")) %
   # Filter and select a subset of the original data
   filter(year > 1999) %>%
   rename(p_edb_rank = p_ebd_rank) %>%
-  select(ccode, country_name, year, 
+  select(ccode, economy, year, 
          sb_proced, sb_days, sb_capital, sb_cost, con_proced, con_days,
          contains("_reform"),
          gdp, gdpcap, pop, gdpgrowth, polity = polity2, ibrd,
          inttot, civtot, p_edb_rank, yrsoffc, icrg_index, fdi_inper, trade) %>%
+  # Add standardized country names from countrycode
+  mutate(ccode = case_when(
+    .$ccode == 730 ~ 732,  # Change South Korea's ccode to 732 instead of pre-war unified Korea's 730
+    .$ccode == 1002 ~ 402,  # Cabo Verde has a real COW code
+    TRUE ~ .$ccode
+  )) %>% 
+  mutate(country_name = countrycode(ccode, "cown", "country.name",
+                                    custom_match = c(`1001` = "Serbia",
+                                                     `1003` = "Puerto Rico", 
+                                                     `1004` = "Palestinian Territories", 
+                                                     `1005` = "Hong Kong SAR China")),
+         # Use 345 for Serbia, but change it after creating country_name so it's not Yugoslavia
+         ccode = ifelse(ccode == 1001, 345, ccode)) %>% 
   # Make variable indicating if country has a reform bureau
   mutate(has_bureau = ccode %in% edb_bureau$cowcode,
          has_bureau = factor(has_bureau, 
