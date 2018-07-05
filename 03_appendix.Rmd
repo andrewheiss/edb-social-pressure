@@ -148,7 +148,8 @@ model_in_2001_robust <- robust_clusterify(model_in_2001, edb_in_2001, "ccode") %
 model_in_2001_out <- stargazer(model_in_2001, type = "html", dep.var.caption = "",
                                dep.var.labels = "in\\_2001\\_lead",
                                se = list(model_in_2001_robust$std.error),
-                               notes = "Logistic regression model. Robust standard errors clustered by country.")
+                               notes = c("Logistic regression model. Robust standard errors clustered by country.", 
+                                         "Models include countries present in the 2001 EDB report."))
 ```
 
 ```{r tbl-model-in-2001, results="asis"}
@@ -199,7 +200,8 @@ edb_checks_models <- edb_checks %>%
 edb_checks_models_out <- stargazer(edb_checks_models$model, type = "html", 
                                    dep.var.caption = "",
                                    se = edb_checks_models$ses_only,
-                                   notes = "OLS models. Robust standard errors clustered by country.",
+                                   notes = c("OLS models. Robust standard errors clustered by country.",
+                                             "Models include countries present in the 2001 EDB report."),
                                    keep.stat = c("n", "rsq", "adj.rsq"))
 ```
 
@@ -316,7 +318,8 @@ tbl_ols_2005 <- ols_models_lagged %>%
 tbl_ols_2005_out <- stargazer(tbl_ols_2005$model, type = "html", 
                               dep.var.caption = "",
                               se = tbl_ols_2005$ses_only,
-                              notes = "OLS models. Robust standard errors clustered by country.",
+                              notes = c("OLS models. Robust standard errors clustered by country.", 
+                                        "Models include countries present in the 2001 EDB report."),
                               keep.stat = c("n", "rsq", "adj.rsq"))
 
 tbl_ols_2006 <- ols_models_lagged %>%
@@ -325,7 +328,8 @@ tbl_ols_2006 <- ols_models_lagged %>%
 tbl_ols_2006_out <- stargazer(tbl_ols_2006$model, type = "html", 
                               dep.var.caption = "",
                               se = tbl_ols_2006$ses_only,
-                              notes = "OLS models. Robust standard errors clustered by country.",
+                              notes = c("OLS models. Robust standard errors clustered by country.", 
+                                        "Models include countries present in the 2001 EDB report."),
                               keep.stat = c("n", "rsq", "adj.rsq"))
 ```
 
@@ -424,7 +428,8 @@ tbl_its_2005 <- its_models_lagged %>%
 tbl_its_2005_out <- stargazer(tbl_its_2005$model, type = "html", 
                               dep.var.caption = "",
                               se = tbl_its_2005$ses_only,
-                              notes = "ITS models. Robust standard errors clustered by country.",
+                              notes = c("ITS models. Robust standard errors clustered by country.", 
+                                        "Models include countries present in the 2001 EDB report."),
                               keep.stat = c("n", "rsq", "adj.rsq"))
 
 tbl_its_2006 <- its_models_lagged %>%
@@ -433,7 +438,8 @@ tbl_its_2006 <- its_models_lagged %>%
 tbl_its_2006_out <- stargazer(tbl_its_2006$model, type = "html", 
                               dep.var.caption = "",
                               se = tbl_its_2006$ses_only,
-                              notes = "ITS models. Robust standard errors clustered by country.",
+                              notes = c("ITS models. Robust standard errors clustered by country.", 
+                                        "Models include countries present in the 2001 EDB report."),
                               keep.stat = c("n", "rsq", "adj.rsq"))
 ```
 
@@ -591,7 +597,8 @@ sb_fe <- country_fe_models_all %>%
 sb_country_fe_models_out <- stargazer(sb_fe$model, type = "html", 
                                       dep.var.caption = "",
                                       se = sb_fe$ses_only,
-                                      notes = "OLS models. Robust standard errors clustered by country.",
+                                      notes = c("OLS models. Robust standard errors clustered by country.",
+                                                "Models include countries present in the 2004 EDB report."),
                                       keep.stat = c("n", "rsq", "adj.rsq"),
                                       add.lines = list(c("Country fixed effects", 
                                                          rep(c("No", "Yes"), 4))),
@@ -617,7 +624,8 @@ con_fe <- country_fe_models_all %>%
 con_country_fe_models_out <- stargazer(con_fe$model, type = "html", 
                                        dep.var.caption = "",
                                        se = con_fe$ses_only,
-                                       notes = "OLS models. Robust standard errors clustered by country.",
+                                       notes = c("OLS models. Robust standard errors clustered by country.",
+                                                 "Models include countries present in the 2004 EDB report."),
                                        keep.stat = c("n", "rsq", "adj.rsq"),
                                        add.lines = list(c("Country fixed effects", 
                                                           rep(c("No", "Yes"), 4))),
@@ -756,7 +764,8 @@ sb_fe_year <- year_fe_models_all %>%
 sb_year_fe_models_out <- stargazer(sb_fe_year$model, type = "html", 
                                    dep.var.caption = "",
                                    se = sb_fe_year$ses_only,
-                                   notes = "OLS models. Robust standard errors clustered by country.",
+                                   notes = c("OLS models. Robust standard errors clustered by country.",
+                                             "Models include countries present in the 2004 EDB report."),
                                    keep.stat = c("n", "rsq", "adj.rsq"),
                                    add.lines = list(c("Year fixed effects", 
                                                       rep(c("No", "Yes"), 4))),
@@ -782,7 +791,8 @@ con_fe_year <- year_fe_models_all %>%
 con_year_fe_models_out <- stargazer(con_fe_year$model, type = "html", 
                                     dep.var.caption = "",
                                     se = con_fe_year$ses_only,
-                                    notes = "OLS models. Robust standard errors clustered by country.",
+                                    notes = c("OLS models. Robust standard errors clustered by country.",
+                                              "Models include countries present in the 2004 EDB report."),
                                     keep.stat = c("n", "rsq", "adj.rsq"),
                                     add.lines = list(c("Year fixed effects", 
                                                        rep(c("No", "Yes"), 4))),
