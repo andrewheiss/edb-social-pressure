@@ -136,6 +136,7 @@ edb_clean <- read_dta(file.path(here(), "data_raw", "MasterWBMarch16_15.dta")) %
                                                      `1005` = "Hong Kong SAR China")),
          # Use 345 for Serbia, but change it after creating country_name so it's not Yugoslavia
          ccode = ifelse(ccode == 1001, 345, ccode)) %>% 
+  mutate_at(vars(ccode, year), funs(as.integer)) %>% 
   # Make variable indicating if country has a reform bureau
   mutate(has_bureau = ccode %in% edb_bureau$cowcode,
          has_bureau = factor(has_bureau, 
